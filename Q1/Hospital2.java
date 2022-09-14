@@ -2,7 +2,7 @@ import java.util.Iterator;
 import java.util.Objects;
 
 public class Hospital2 extends HospitalBase {
-
+    //Priority Queue or List
     public Hospital2() {
         /* Add your code here! */
     }

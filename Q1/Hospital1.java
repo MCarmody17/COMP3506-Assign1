@@ -7,7 +7,7 @@ public class Hospital1 extends HospitalBase {
     ArrayList bookings = new ArrayList();
 
     public Hospital1() {
-        /* Add map, key is the time, value is the patient details,
+        /* LIST LIST LIST
             We want to make sure no overlap, so first we check to make
             sure the key contains 20, 40, or 60 and not in the lunch break.
             then we check if it's in the map. If not we add and success, if it is, unlucky.
@@ -49,11 +49,14 @@ public class Hospital1 extends HospitalBase {
     @Override
     public Iterator<PatientBase> iterator() {
         /* Add your code here! */
-        return bookings.iterator();
+        Iterator iterator = bookings.iterator();
+        while(iterator.hasNext()){
+            iterator.next();
+        }
+       return null;
     }
 
     /* Add any extra functions below */
-
 
 
 
@@ -88,7 +91,7 @@ interface List<E> {
 
 class ArrayList<E> implements List<E> {
     // instance variables
-    public static final int CAPACITY = 16; // default array capacity
+    public static final int CAPACITY = 4; // default array capacity
     private E[] data; // generic array used for storage
     private int size = 0; // current number of elements
 
@@ -168,38 +171,39 @@ class ArrayList<E> implements List<E> {
     }
 
 
-
     private class ArrayIterator implements Iterator<E> {
         private int j = 0; // index of the next element to report
         private boolean removable = false; // can remove be called at this time?
-        /**
-         * ∗ Tests whether the iterator has a next object.
-         * ∗ @return true if there are further objects, false otherwise
-         */
-        public boolean hasNext() throws NullPointerException{
+
+
+        public boolean hasNext() {
             return j < size;
         } // size is field of outer instance
 
-        /**
-         * ∗ Returns the next object in the iterator.
-         * ∗
-         * ∗ @return next object
-         * ∗ @throws NoSuchElementException if there are no further elements
-         */
+
         public E next() throws NoSuchElementException {
-            if (j == size) throw new NoSuchElementException("No next element");
+            System.out.println(data[j]);
+            if (j == size) {
+                throw new NoSuchElementException("No next element");
+            }
             removable = true; // this element can subsequently be removed
             return data[j++]; // post-increment j, so it is ready for future call to next
         }
 
+        public void remove() throws IllegalStateException {
+            if (!removable) throw new IllegalStateException("nothing to remove");
+            ArrayList.this.remove(j - 1); // that was the last one returned
+            j--; // next element has shifted one cell to the left
+            removable = false; // do not allow remove again until next is called
+        }
     } //------------ end of nested ArrayIterator class ------------
+
     /**
      * Returns an iterator of the elements stored in the list.
      */
     public Iterator<E> iterator() {
         return new ArrayIterator(); // create a new instance of the inner class
     }
-
 }
 
 

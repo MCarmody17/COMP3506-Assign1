@@ -3,6 +3,7 @@ import java.util.Objects;
 
 public class Hospital3 extends HospitalBase {
 
+    //Hash Table
     public Hospital3() {
         /* Add your code here! */
     }
