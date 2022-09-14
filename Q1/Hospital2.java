@@ -42,3 +42,4 @@ public class Hospital2 extends HospitalBase {
         }
     }
 }
+
