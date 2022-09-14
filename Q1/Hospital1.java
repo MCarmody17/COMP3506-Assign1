@@ -19,19 +19,28 @@ public class Hospital1 extends HospitalBase {
         String[] time = patient.getTime().split(":");
         int hours = Integer.parseInt(time[0]);
         int minutes = Integer.parseInt(time[1]);
-        boolean taken = false;
 
-        if (minutes == 00|| minutes == 20 || minutes == 40) {
+        if (minutes == 00|| minutes == 20 || minutes == 40 && hours != 12) {
             //Initial patient, They can be booked whenever
             if(bookings.isEmpty()){
                 bookings.add(0, patient);
                 System.out.println("ADDED" + patient);
             }else {
+                for(int i = 0; i < bookings.size(); i++){
+                    Patient temp = (Patient) bookings.get(i);
+                    String [] tempTime = temp.getTime().split(":");
+                    int tempHours = Integer.parseInt(tempTime[0]);
+                    int tempMinutes = Integer.parseInt(tempTime[1]);
 
-                bookings.add(0, patient);
-                System.out.println("Added: " + patient);
-                return true;
-                //Now we need to find the spot for the next customer
+                    if(hours < tempHours){
+                        System.out.println("Added: " + i+ patient);
+                        bookings.add(i, patient);
+                    }
+                    bookings.add(bookings.size(), patient);
+                    return true;
+
+                }
+
 
             }
         }
@@ -43,17 +52,17 @@ public class Hospital1 extends HospitalBase {
     public Iterator<PatientBase> iterator() {
         /* Add your code here! */
         Iterator iterator = bookings.iterator();
-        while(iterator.hasNext()){
-            //System.out.println(iterator.next());
-            iterator.next();
+        System.out.println(bookings.size());
+        for(int i = 0; i<bookings.size();i++){
+            System.out.println(bookings.get(i));
         }
-
+        while(iterator.hasNext()){
+           iterator.next();
+        }
        return iterator;
     }
 
     /* Add any extra functions below */
-
-
 
 
 }
@@ -86,7 +95,7 @@ interface List<E> {
 
 class ArrayList<E> implements List<E> {
     // instance variables
-    public static final int CAPACITY = 2; // default array capacity
+    public static final int CAPACITY = 16; // default array capacity
     private E[] data; // generic array used for storage
     private int size = 0; // current number of elements
 
@@ -132,20 +141,17 @@ class ArrayList<E> implements List<E> {
     }
 
     // Inserts element e to be at index i, shifting all subsequent elements later. ∗/
-    public void add(int i, E e) throws IndexOutOfBoundsException,
-            IllegalStateException {
+    public void add(int i, E e) throws IndexOutOfBoundsException, IllegalStateException {
         checkIndex(i, size + 1);
-        checkIndex(i, size + 1);
-        if (size == data.length) { // not enough capacity
-            resize(2 * data.length);
+        if (size == data.length) {
+            throw new IllegalStateException("Array is full");
         }
-        for (int k = size - 1; k > i; k--) {
+        for (int k = size-1 ; k >= i; k--) {
             data[k + 1] = data[k];
         }
         data[i] = e; // ready to place the new element
         size++;
     }
-
     // Removes/returns the element at index i, shifting subsequent elements earlier. ∗/
     public E remove(int i) throws IndexOutOfBoundsException {
         checkIndex(i, size);
