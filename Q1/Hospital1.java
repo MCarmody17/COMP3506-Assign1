@@ -12,37 +12,29 @@ public class Hospital1 extends HospitalBase {
             sure the key contains 20, 40, or 60 and not in the lunch break.
             then we check if it's in the map. If not we add and success, if it is, unlucky.
          */
-
-
     }
 
     @Override
     public boolean addPatient(PatientBase patient) {
         String[] time = patient.getTime().split(":");
         int hours = Integer.parseInt(time[0]);
-        String minsString = time[1];
         int minutes = Integer.parseInt(time[1]);
-        String patientName = patient.getName();
+        boolean taken = false;
 
+        if (minutes == 00|| minutes == 20 || minutes == 40) {
+            //Initial patient, They can be booked whenever
+            if(bookings.isEmpty()){
+                bookings.add(0, patient);
+                System.out.println("ADDED" + patient);
+            }else {
 
-        if (minsString.equals("00") || minsString.equals("20") || minsString.equals("40")) {
-            /*Add to the Bookings ArrayList with TIME as KEY, and NAME as VALUE.
-               This way we can check if exists
-            */
-            for (int i = 0; i < bookings.size(); i++) {
-                Patient tempPatient = (Patient) bookings.get(i);
-                String[] patientTime = patient.getTime().split(":");
-                int tempHours = Integer.parseInt(patientTime[0]);
-                int tempMins = Integer.parseInt(patientTime[1]);
-                if (hours <= tempHours && minutes < tempMins) {
-                    bookings.add(i, patient);
-                    return true;
-                }
+                bookings.add(0, patient);
+                System.out.println("Added: " + patient);
+                return true;
+                //Now we need to find the spot for the next customer
 
             }
-
         }
-
         return false;
     }
 
@@ -52,7 +44,7 @@ public class Hospital1 extends HospitalBase {
         /* Add your code here! */
         Iterator iterator = bookings.iterator();
         while(iterator.hasNext()){
-            System.out.println(iterator.next());
+            //System.out.println(iterator.next());
             iterator.next();
         }
 
@@ -94,7 +86,7 @@ interface List<E> {
 
 class ArrayList<E> implements List<E> {
     // instance variables
-    public static final int CAPACITY = 3; // default array capacity
+    public static final int CAPACITY = 2; // default array capacity
     private E[] data; // generic array used for storage
     private int size = 0; // current number of elements
 
@@ -185,7 +177,7 @@ class ArrayList<E> implements List<E> {
 
 
         public E next() throws NoSuchElementException {
-            System.out.println(data[j]);
+            //System.out.println(data[j]);
             if (j == size) {
                 throw new NoSuchElementException("No next element");
             }
