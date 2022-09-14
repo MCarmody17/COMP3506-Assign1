@@ -13,6 +13,7 @@ public class Hospital1 extends HospitalBase {
             then we check if it's in the map. If not we add and success, if it is, unlucky.
          */
 
+
     }
 
     @Override
@@ -51,9 +52,11 @@ public class Hospital1 extends HospitalBase {
         /* Add your code here! */
         Iterator iterator = bookings.iterator();
         while(iterator.hasNext()){
+            System.out.println(iterator.next());
             iterator.next();
         }
-       return null;
+
+       return iterator;
     }
 
     /* Add any extra functions below */
@@ -91,7 +94,7 @@ interface List<E> {
 
 class ArrayList<E> implements List<E> {
     // instance variables
-    public static final int CAPACITY = 4; // default array capacity
+    public static final int CAPACITY = 3; // default array capacity
     private E[] data; // generic array used for storage
     private int size = 0; // current number of elements
 
