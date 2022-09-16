@@ -1,17 +1,12 @@
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 
 public class Hospital1 extends HospitalBase {
-    ArrayList bookings = new ArrayList();
+    OrderedLinkedList bookings;
+
 
     public Hospital1() {
-        /* LIST LIST LIST
-            We want to make sure no overlap, so first we check to make
-            sure the key contains 20, 40, or 60 and not in the lunch break.
-            then we check if it's in the map. If not we add and success, if it is, unlucky.
-         */
+        this.bookings = new OrderedLinkedList();
     }
 
     @Override
@@ -20,191 +15,192 @@ public class Hospital1 extends HospitalBase {
         int hours = Integer.parseInt(time[0]);
         int minutes = Integer.parseInt(time[1]);
 
-        if (minutes == 00|| minutes == 20 || minutes == 40 && hours != 12) {
+        if (minutes == 0 || minutes == 20 || minutes == 40 && hours != 12) {
             //Initial patient, They can be booked whenever
-            if(bookings.isEmpty()){
-                bookings.add(0, patient);
-                System.out.println("ADDED" + patient);
-            }else {
-                for(int i = 0; i < bookings.size(); i++){
-                    Patient temp = (Patient) bookings.get(i);
-                    String [] tempTime = temp.getTime().split(":");
-                    int tempHours = Integer.parseInt(tempTime[0]);
-                    int tempMinutes = Integer.parseInt(tempTime[1]);
-
-                    if(hours < tempHours){
-                        System.out.println("Added: " + i+ patient);
-                        bookings.add(i, patient);
-                    }
-                    bookings.add(bookings.size(), patient);
-                    return true;
-
-                }
-
-
-            }
+            bookings.addNode(new Patient(patient.getName(), patient.getTime()));
+            return true;
         }
         return false;
     }
 
 
-    @Override
-    public Iterator<PatientBase> iterator() {
-        /* Add your code here! */
-        Iterator iterator = bookings.iterator();
-        System.out.println(bookings.size());
-        for(int i = 0; i<bookings.size();i++){
-            System.out.println(bookings.get(i));
-        }
-        while(iterator.hasNext()){
-           iterator.next();
-        }
-       return iterator;
-    }
-
     /* Add any extra functions below */
 
 
-}
 
+    // Node with data of plane Object - pseudocode from Data Structures and Algorithms in Java, page 126
+    class Node {
+        Patient patient;
+        Node next;
 
-// List Interface
-
-interface List<E> {
-    // Returns the number of elements in this list. ∗/
-    int size();
-
-    // Returns whether the list is empty. ∗/
-    boolean isEmpty();
-
-    // Returns (but does not remove) the element at index i. ∗/
-    E get(int i) throws IndexOutOfBoundsException;
-
-    // Replaces the element at index i with e, and returns the replaced element. ∗/
-    E set(int i, E e) throws IndexOutOfBoundsException;
-
-    // Inserts element e to be at index i, shifting all subsequent elements later. ∗/
-    void add(int i, E e) throws IndexOutOfBoundsException;
-
-    // Removes/returns the element at index i, shifting subsequent elements earlier. ∗/
-    E remove(int i) throws IndexOutOfBoundsException;
-}
-
-
-// Basic Array List
-
-class ArrayList<E> implements List<E> {
-    // instance variables
-    public static final int CAPACITY = 16; // default array capacity
-    private E[] data; // generic array used for storage
-    private int size = 0; // current number of elements
-
-    protected void resize(int capacity) {
-        E[] temp = (E[]) new Object[capacity]; // safe cast; compiler may give warning
-        for (int k = 0; k < size; k++)
-            temp[k] = data[k];
-        data = temp; // start using the new array
-    }
-
-    // constructors
-    public ArrayList() {
-        this(CAPACITY);
-    } // constructs list with default capacity
-
-    public ArrayList(int capacity) { // constructs list with given capacity
-        data = (E[]) new Object[capacity]; // safe cast; compiler may give warning
-    }
-
-    // public methods
-    /* Returns the number of elements in the array list. **/
-    public int size() {
-        return size;
-    }
-
-    //Returns whether the array list is empty. ∗/
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    // Returns (but does not remove) the element at index i. ∗/
-    public E get(int i) throws IndexOutOfBoundsException {
-        checkIndex(i, size);
-        return data[i];
-    }
-
-    // Replaces the element at index i with e, and returns the replaced element. ∗/
-    public E set(int i, E e) throws IndexOutOfBoundsException {
-        checkIndex(i, size);
-        E temp = data[i];
-        data[i] = e;
-        return temp;
-    }
-
-    // Inserts element e to be at index i, shifting all subsequent elements later. ∗/
-    public void add(int i, E e) throws IndexOutOfBoundsException, IllegalStateException {
-        checkIndex(i, size + 1);
-        if (size == data.length) {
-            throw new IllegalStateException("Array is full");
+        Node(Patient patient) {
+            this.patient = patient;
+            this.next = null;
         }
-        for (int k = size-1 ; k >= i; k--) {
-            data[k + 1] = data[k];
-        }
-        data[i] = e; // ready to place the new element
-        size++;
     }
-    // Removes/returns the element at index i, shifting subsequent elements earlier. ∗/
-    public E remove(int i) throws IndexOutOfBoundsException {
-        checkIndex(i, size);
-        E temp = data[i];
-        for (int k = i; k < size - 1; k++) {
-            data[k] = data[k + 1];
-        }
-        data[size - 1] = null;
-        size--;
-        return temp;
+    @Override
+    public Iterator<PatientBase> iterator() {
+        System.out.println(bookings.iterator());
+        return bookings.iterator();
     }
 
-    // utility method
-    // Checks whether the given index is in the range [0, n−1]. ∗/
-    protected void checkIndex(int i, int n) throws IndexOutOfBoundsException {
-        if (i < 0 || i >= n)
-            throw new IndexOutOfBoundsException("Illegal index: " + i);
-    }
+    class OrderedLinkedList {
 
+        Node head;
+        int size = 0;
 
-    private class ArrayIterator implements Iterator<E> {
-        private int j = 0; // index of the next element to report
-        private boolean removable = false; // can remove be called at this time?
+        public void addNode(Patient patient) {
+            Node newPatient = new Node(patient);
+            Node pointer = head;
+            Node previousNodeOfPointer = null;
 
-
-        public boolean hasNext() {
-            return j < size;
-        } // size is field of outer instance
-
-
-        public E next() throws NoSuchElementException {
-            //System.out.println(data[j]);
-            if (j == size) {
-                throw new NoSuchElementException("No next element");
+            // add first - pseudocode from Data Structures and Algorithms in Java, page 127
+            if (pointer == null) {
+                head = newPatient;
+                size++;
+                return;
             }
-            removable = true; // this element can subsequently be removed
-            return data[j++]; // post-increment j, so it is ready for future call to next
+
+            // insert node at start - pseudocode from Introduction to Algorithms, page 238
+            if (newPatient.patient.getTime().compareTo(pointer.patient.getTime()) <= 0) {
+                newPatient.next = head;
+                head = newPatient;
+                size++;
+                return;
+            }
+
+            // list search to find valid position - pseudocode from Introduction to Algoritms, page 239
+            while (pointer != null && newPatient.patient.getTime().compareTo(pointer.patient.getTime()) >= 0) {
+                previousNodeOfPointer = pointer;
+                pointer = pointer.next;
+            }
+
+            previousNodeOfPointer.next = newPatient;
+            newPatient.next = pointer;
+            size++;
+            return;
         }
 
-        public void remove() throws IllegalStateException {
-            if (!removable) throw new IllegalStateException("nothing to remove");
-            ArrayList.this.remove(j - 1); // that was the last one returned
-            j--; // next element has shifted one cell to the left
-            removable = false; // do not allow remove again until next is called
-        }
-    } //------------ end of nested ArrayIterator class ------------
 
-    /**
-     * Returns an iterator of the elements stored in the list.
-     */
-    public Iterator<E> iterator() {
-        return new ArrayIterator(); // create a new instance of the inner class
+
+        public boolean validTimeDifference(String currentTime, String earliestPatientTime) {
+
+            String[] currTime = currentTime.split(":");
+            String[] earliestTime = earliestPatientTime.split(":");
+
+            String cTimeHours = currTime[0];
+            String cTimeMinutes = currTime[1];
+            String eTimeHours = earliestTime[0];
+            String eTimeMinutes = earliestTime[1];
+
+            int currentTimeHours;
+            int currentTimeMinutes;
+            int earliestTimeHours;
+            int earliestTimeMinutes;
+
+            if (cTimeHours.charAt(0) == '0') {
+                currentTimeHours = Integer.parseInt(Character.toString(cTimeHours.charAt(1)));
+            } else {
+                currentTimeHours = Integer.parseInt(cTimeHours);
+            }
+
+            if (cTimeMinutes.charAt(0) == '0') {
+                currentTimeMinutes = Integer.parseInt(Character.toString(cTimeMinutes.charAt(1)));
+            } else {
+                currentTimeMinutes = Integer.parseInt(cTimeMinutes);
+            }
+
+            if (eTimeHours.charAt(0) == '0') {
+                earliestTimeHours = Integer.parseInt(Character.toString(eTimeHours.charAt(1)));
+            } else {
+                earliestTimeHours = Integer.parseInt(eTimeHours);
+            }
+
+            if (eTimeMinutes.charAt(0) == '0') {
+                earliestTimeMinutes = Integer.parseInt(Character.toString(eTimeMinutes.charAt(1)));
+            } else {
+                earliestTimeMinutes = Integer.parseInt(eTimeMinutes);
+            }
+
+            if (currentTimeHours <= earliestTimeHours && (earliestTimeMinutes - currentTimeMinutes <= 5)) {
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        public boolean presentNode(String patientName) {
+            Node pointer = head;
+
+            if (pointer == null) {
+                return false;
+            }
+
+            // list search to find valid position - pseudocode from Introduction to Algorithms, page 239
+            while (pointer != null) {
+                if (pointer.patient.getName().equals(patientName)) {
+                    return true;
+                }
+                pointer = pointer.next;
+            }
+
+            return false;
+        }
+
+        public Iterator<PatientBase> iterator() {
+            return  new Iterator<PatientBase>() {
+                Node current = head;
+
+                @Override
+                public boolean hasNext() {
+                    return current!=null;
+                }
+
+                @Override
+                public PatientBase next() {
+                    if(hasNext()){
+                        PatientBase patient = current.patient;
+                        current = current.next;
+                        System.out.println(patient);
+                        return patient;
+                    }
+                    return null;
+                }
+
+            };
+
+        }
+
+
+    }
+
+    public static void main(String[] args) {
+        /*
+         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         * REMOVE THE MAIN METHOD BEFORE SUBMITTING TO THE AUTOGRADER
+         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         * The following main method is provided for simple debugging only
+         */
+        var hospital = new Hospital1();
+        var p1 = new Patient("Max", "11:00");
+        var p2 = new Patient("Alex", "13:00");
+        var p3 = new Patient("George", "14:00");
+        hospital.addPatient(p2);
+        hospital.addPatient(p1);
+        hospital.addPatient(p3);
+        var patients = new Patient[]{p1, p2, p3};
+        int i = 0;
+
+        for (var patient : hospital) {
+            System.out.println(" Entered, Woooo");
+            if (!Objects.equals(patient, patients[i++])) {
+                System.err.println("Wrong patient encountered, check your implementation!");
+            }
+        }
     }
 }
+
 
 
