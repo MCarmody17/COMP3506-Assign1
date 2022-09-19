@@ -40,7 +40,6 @@ public class Hospital1 extends HospitalBase {
     }
     @Override
     public Iterator<PatientBase> iterator() {
-        System.out.println(bookings.iterator());
         return bookings.iterator();
     }
 
@@ -161,15 +160,15 @@ public class Hospital1 extends HospitalBase {
 
                 @Override
                 public boolean hasNext() {
-                    return current!=null;
+                    return (current!=null);
                 }
 
                 @Override
                 public PatientBase next() {
                     if(hasNext()){
                         PatientBase patient = current.patient;
-                        current = current.next;
                         System.out.println(patient);
+                        current = current.next;
                         return patient;
                     }
                     return null;
