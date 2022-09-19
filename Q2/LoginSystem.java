@@ -1,51 +1,253 @@
 
 
 public class LoginSystem extends LoginSystemBase {
+    LinearProbingHashTable login = new LinearProbingHashTable();
 
     @Override
     public int size() {
-        /* Add your code here! */
-        return 0;
+        return login.getMaxSize();
+
     }
 
     @Override
     public int getNumUsers() {
         /* Add your code here! */
-        return 0;
+        return login.getSize();
     }
 
     @Override
     public int hashCode(String key) {
-        /* Add your code here! */
-        return 0;
+        return login.hash(key);
     }
 
     @Override
     public boolean addUser(String email, String password) {
-        /* Add your code here! */
-        return false;
+        login.insert(email, password);
+        return true;
     }
 
     @Override
     public boolean removeUser(String email, String password) {
-        /* Add your code here! */
-        return false;
+        login.remove(email);
+        return true;
     }
 
     @Override
     public int checkPassword(String email, String password) {
-        /* Add your code here! */
-        return 0;
+        return login.checkPassword(email,password);
     }
 
     @Override
     public boolean changePassword(String email, String oldPassword, String newPassword) {
-        /* Add your code here! */
-        return false;
+        return login.changePassword(email, oldPassword, newPassword);
     }
 
     /* Add any extra functions below */
+    /** Class LinearProbingHashTable **/
+    class LinearProbingHashTable
+    {
+        private int currentSize, maxSize;
+        private String[] keys;
+        private String[] vals;
 
+        /** Constructor **/
+        public LinearProbingHashTable()
+        {
+            currentSize = 0;
+            maxSize = 101;
+            keys = new String[maxSize];
+            vals = new String[maxSize];
+        }
+        public LinearProbingHashTable(int maxSize)
+        {
+            currentSize = 0;
+            maxSize = maxSize;
+            keys = new String[maxSize];
+            vals = new String[maxSize];
+        }
+
+
+        /** Function to clear hash table **/
+        public void makeEmpty()
+        {
+            currentSize = 0;
+            keys = new String[maxSize];
+            vals = new String[maxSize];
+        }
+
+        /** Function to get size of hash table **/
+        public int getSize()
+        {
+            return currentSize;
+        }
+
+        public int getMaxSize(){
+            return maxSize;
+        }
+
+        /** Function to check if hash table is full **/
+        public boolean isFull()
+        {
+            return currentSize == maxSize;
+        }
+
+        /** Function to check if hash table is empty **/
+        public boolean isEmpty()
+        {
+            return getSize() == 0;
+        }
+
+        /** Fucntion to check if hash table contains a key **/
+        public boolean contains(String key)
+        {
+            return get(key) !=  null;
+        }
+
+
+        public int checkPassword(String email, String password) {
+            String storedPassword = get(email);
+            String verify = passwordHash(password);
+            if(storedPassword == verify){
+                return 1;
+            }
+
+            return 0;
+        }
+
+        private boolean changePassword(String email, String oldPassword, String newPassword){
+            if(checkPassword(email,oldPassword) == 1){
+                String newPass = passwordHash(newPassword);
+                int k = hash(email);
+                while (keys[k] != null)
+                {
+                    if (keys[k].equals(email)) {
+                        vals[k] = newPass;
+                        return true;
+                    }
+                    k = (k + 1) % maxSize;
+                }
+            }
+            return false;
+        }
+
+
+        public void resize(){
+            maxSize *= 3;
+            LinearProbingHashTable nt = new LinearProbingHashTable(maxSize);
+
+        }
+
+        /** Functiont to get hash code of a given key **/
+        private int hash(String key)
+        {
+            int c = 31;
+            int hashcode = 0;
+            for(int i = 0; i < key.length();i++){
+                char ch = key.charAt(i);
+                hashcode += (int) ch;
+                hashcode *= c;
+
+            }
+
+            hashcode = Math.floorMod(hashcode,getMaxSize());
+                    //hashcode % getMaxSize();
+
+            return hashcode;
+        }
+
+        private String passwordHash(String password){
+            int c = 31;
+            int hashcode = 0;
+            for(int i = 0; i < password.length();i++){
+                char ch = password.charAt(i);
+                hashcode += (int) ch;
+                hashcode *= c;
+
+            }
+            String hashed = Integer.toString(hashcode);
+            return hashed;
+        }
+
+
+
+        /** Function to insert key-value pair **/
+        public void insert(String key, String val)
+        {
+            if(contains(key)){
+                System.out.println("Already have that email");
+                return;
+            }
+            int tmp = hash(key);
+            String pass = passwordHash(val);
+
+            int i = tmp;
+            //if (isFull()) {
+            //    resize();
+            //}
+            do
+            {
+                if (keys[i] == null)
+                {
+                    keys[i] = key;
+                    vals[i] = pass;
+                    currentSize++;
+                    return;
+                }
+                if (keys[i].equals(key))
+                {
+                    vals[i] = pass;
+                    return;
+                }
+                i = (i + 1) % maxSize;
+            } while (i != tmp);
+        }
+
+        /** Function to get value for a given key **/
+        public String get(String key)
+        {
+            int i = hash(key);
+            while (keys[i] != null)
+            {
+                if (keys[i].equals(key))
+                    return vals[i];
+                i = (i + 1) % maxSize;
+            }
+            return null;
+        }
+
+        /** Function to remove key and its value **/
+        public void remove(String key)
+        {
+            if (!contains(key))
+                return;
+
+            /** find position key and delete **/
+            int i = hash(key);
+            while (!key.equals(keys[i]))
+                i = (i + 1) % maxSize;
+            keys[i] = vals[i] = null;
+
+            /** rehash all keys **/
+            for (i = (i + 1) % maxSize; keys[i] != null; i = (i + 1) % maxSize)
+            {
+                String tmp1 = keys[i], tmp2 = vals[i];
+                keys[i] = vals[i] = null;
+                currentSize--;
+                insert(tmp1, tmp2);
+            }
+            currentSize--;
+        }
+
+        /** Function to print HashTable **/
+        public void printHashTable()
+        {
+            System.out.println("\nHash Table: ");
+            for (int i = 0; i < maxSize; i++)
+                if (keys[i] != null)
+                    System.out.println(keys[i] +" "+ vals[i]);
+            System.out.println();
+        }
+    }
 
 
 
@@ -59,8 +261,8 @@ public class LoginSystem extends LoginSystemBase {
             LoginSystem loginSystem = new LoginSystem();
             assert loginSystem.hashCode("GQHTMP") == loginSystem.hashCode("H2HTN1");
             assert loginSystem.size() == 101;
-
             assert loginSystem.checkPassword("a@b.c", "L6ZS9") == -1;
+            System.out.println(loginSystem.checkPassword("a@b.c", "L6ZS9"));
             loginSystem.addUser("a@b.c", "L6ZS9");
             assert loginSystem.checkPassword("a@b.c", "ZZZZZZ") == -2;
             assert loginSystem.checkPassword("a@b.c", "L6ZS9") == 94;
@@ -68,261 +270,3 @@ public class LoginSystem extends LoginSystemBase {
             assert loginSystem.checkPassword("a@b.c", "L6ZS9") == -1;
         }
 }
-/*
-interface Entry<K,V> {
- K getKey( ); // returns the key stored in this entry
- V getValue( ); // returns the value stored in this entry
-}
-interface Map<K,V> {
-     int size( );
-     boolean isEmpty( );
-     V get(K key);
-     V put(K key, V value);
-     V remove(K key);
-     Iterable<K> keySet( );
-     Iterable<V> values( );
-     Iterable<Entry<K,V>> entrySet( );
-}
-
-
-
-class hashTable{
-    private int count = 0; // Number of entries within the map
-    int capacity = 101; // Capacity of Map
-    int prime = 31; // The prime number we will use for hashing.
-
-
-    static private class listNode {
-        // Keys that have the same hash code are placed together
-        // in a linked list.  This private nested class is used
-        // internally to implement linked lists.  A ListNode
-        // holds a (key,value) pair.
-        Object key;
-        Object value;
-        hashTable.listNode next;  // Pointer to next node in the list;
-        // A null marks the end of the list.
-    }
-
-    private listNode[] table;
-
-
-
-    public hashTable(){
-        table = new listNode[101];
-    }
-    public int size(){ return count;} // Returns number of key/value pairs
-
-    public int hash(Object key){
-        //  return (int) ((Math.abs(key.hashCode( )∗scale + shift) % prime) % capacity);
-       // return (Math.abs(key.hashCode())) % table.length;
-    }
-
-
-}
-
-
-class HashTable {
-
-
-    private ListNode[] table;  // The hash table, represented as
-    // an array of linked lists.
-
-    private int count;  // The number of (key,value) pairs in the
-    // hash table.
-
-    public HashTable() {
-        // Create a hash table with an initial size of 64.
-        table = new ListNode[101];
-    }
-
-    public HashTable(int initialSize) {
-        // Create a hash table with a specified initial size.
-        // Precondition: initalSize > 0.
-        table = new ListNode[initialSize];
-    }
-
-    void dump() {
-        // This method is NOT part of the usual interface for
-        // a hash table.  It is here only to be used for testing
-        // purposes, and should be removed before the class is
-        // released for general use.  This lists the (key,value)
-        // pairs in each location of the table.
-        System.out.println();
-        for (int i = 0; i < table.length; i++) {
-            // Print out the location number and the list of
-            // key/value pairs in this location.
-            System.out.print(i + ":");
-            ListNode list = table[i]; // For traversing linked list number i.
-            while (list != null) {
-                System.out.print("  (" + list.key + "," + list.value + ")");
-                list = list.next;
-            }
-            System.out.println();
-        }
-    } // end dump()
-
-    public void put(Object key, Object value) {
-        // Associate the specified value with the specified key.
-        // Precondition:  The key is not null.
-        int bucket = hash(key); // Which location should this key be in?
-        ListNode list = table[bucket]; // For traversing the linked list
-        // at the appropriate location.
-        while (list != null) {
-            // Search the nodes in the list, to see if the key already exists.
-            if (list.key.equals(key))
-                break;
-            list = list.next;
-        }
-        // At this point, either list is null, or list.key.equals(key).
-        if (list != null) {
-            // Since list is not null, we have found the key.
-            // Just change the associated value.
-            list.value = value;
-        }
-        else {
-            // Since list == null, the key is not already in the list.
-            // Add a new node at the head of the list to contain the
-            // new key and its associated value.
-            if (count >= 0.75*table.length) {
-                // The table is becoming too full.  Increase its size
-                // before adding the new node.
-                resize();
-            }
-            ListNode newNode = new ListNode();
-            newNode.key = key;
-            newNode.value = value;
-            newNode.next = table[bucket];
-            table[bucket] = newNode;
-            count++;  // Count the newly added key.
-        }
-    }
-
-    public Object get(Object key) {
-        // Retrieve the value associated with the specified key
-        // in the table, if there is any.  If not, the value
-        // null will be returned.
-        int bucket = hash(key);  // At what location should the key be?
-        ListNode list = table[bucket];  // For traversing the list.
-        while (list != null) {
-            // Check if the specified key is in the node that
-            // list points to.  If so, return the associated value.
-            if (list.key.equals(key))
-                return list.value;
-            list = list.next;  // Move on to next node in the list.
-        }
-        // If we get to this point, then we have looked at every
-        // node in the list without finding the key.  Return
-        // the value null to indicate that the key is not in the table.
-        return null;
-    }
-
-    public void remove(Object key) {
-        // Remove the key and its associated value from the table,
-        // if the key occurs in the table.  If it does not occur,
-        // then nothing is done.
-        int bucket = hash(key);  // At what location should the key be?
-        if (table[bucket] == null) {
-            // There are no keys in that location, so key does not
-            // occur in the table.  There is nothing to do, so return.
-            return;
-        }
-        if (table[bucket].key.equals(key)) {
-            // If the key is the first node on the list, then
-            // table[bucket] must be changed to eliminate the
-            // first node from the list.
-            table[bucket] = table[bucket].next;
-            count--; // Remove new number of items in the table.
-            return;
-        }
-        // We have to remove a node from somewhere in the middle
-        // of the list, or at the end.  Use a pointer to traverse
-        // the list, looking for a node that contains the
-        // specified key, and remove it if it is found.
-        ListNode prev = table[bucket];  // The node that precedes
-        // curr in the list.  Prev.next
-        // is always equal to curr.
-        ListNode curr = prev.next;  // For traversing the list,
-        // starting from the second node.
-        while (curr != null && ! curr.key.equals(key)) {
-            curr = curr.next;
-            prev = curr;
-        }
-        // If we get to this point, then either curr is null,
-        // or curr.key is equal to key.  In the later case,
-        // we have to remove curr from the list.  Do this
-        // by making prev.next point to the node after curr,
-        // instead of to curr.  If curr is null, it means that
-        // the key was not found in the table, so there is nothing
-        // to do.
-        if (curr != null) {
-            prev.next = curr.next;
-            count--;  // Record new number of items in the table.
-        }
-    }
-
-    public boolean containsKey(Object key) {
-        // Test whether the specified key has an associated value
-        // in the table.
-        int bucket = hash(key);  // In what location should key be?
-        ListNode list = table[bucket];  // For traversing the list.
-        while (list != null) {
-            // If we find the key in this node, return true.
-            if (list.key.equals(key))
-                return true;
-            list = list.next;
-        }
-        // If we get to this point, we know that the key does
-        // not exist in the table.
-        return false;
-    }
-
-    public int size() {
-        // Return the number of key/value pairs in the table.
-        return count;
-    }
-
-    private int hash(Object key) {
-        // Compute a hash code for the key; key cannot be null.
-        // The hash code depends on the size of the table as
-        // well as on the value returned by key.hashCode().
-        return (Math.abs(key.hashCode())) % table.length;
-    }
-
-    private void resize() {
-        // Double the size of the table, and redistribute the
-        // key/value pairs to their proper locations in the
-        // new table.
-        ListNode[] newtable = new ListNode[table.length*2];
-        for (int i = 0; i < table.length; i++) {
-            // Move all the nodes in linked list number i
-            // into the new table.  No new ListNodes are
-            // created.  The existing ListNode for each
-            // key/value pair is moved to the newtable.
-            // This is done by changing the "next" pointer
-            // in the node and by making a pointer in the
-            // new table point to the node.
-            ListNode list = table[i]; // For traversing linked list number i.
-            while (list != null) {
-                // Move the node pointed to by list to the new table.
-                ListNode next = list.next;  // The is the next node in the list.
-                // Remember it, before changing
-                // the value of list!
-                int hash = (Math.abs(list.key.hashCode())) % newtable.length;
-                // hash is the hash code of list.key that is
-                // appropriate for the new table size.  The
-                // next two lines add the node pointed to by list
-                // onto the head of the linked list in the new table
-                // at position number hash.
-                list.next = newtable[hash];
-                newtable[hash] = list;
-                list = next;  // Move on to the next node in the OLD table.
-            }
-        }
-        table = newtable;  // Replace the table with the new table.
-    } // end resize()
-
-} // end class HashTable
-
-
-
- */
