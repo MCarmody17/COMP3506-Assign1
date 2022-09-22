@@ -6,7 +6,16 @@ public class Patient extends PatientBase {
 
     @Override
     public int compareTo(PatientBase o) {
-        /* Add your code here! */
+        String appointmentTime = this.getTime();
+        String comparisonTime = o.getTime();
+        int timeComparison = appointmentTime.compareTo(comparisonTime);
+
+        // compares appointments based on their time
+        if (timeComparison > 0) {
+            return 1;
+        } else if (timeComparison < 0) {
+            return -1;
+        }
         return 0;
     }
 

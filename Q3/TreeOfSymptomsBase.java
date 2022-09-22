@@ -11,6 +11,7 @@ abstract class SymptomBase implements Comparable<SymptomBase> {
     public SymptomBase(String symptom, int severity) {
         this.symptom = symptom;
         this.severity = severity;
+
     }
 
     public String getSymptom() {

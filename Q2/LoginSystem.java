@@ -6,7 +6,6 @@ public class LoginSystem extends LoginSystemBase {
     @Override
     public int size() {
         return login.getMaxSize();
-
     }
 
     @Override
@@ -105,13 +104,16 @@ public class LoginSystem extends LoginSystemBase {
 
 
         public int checkPassword(String email, String password) {
-            String storedPassword = get(email);
-            String verify = passwordHash(password);
-            if(storedPassword == verify){
-                return 1;
+            if(contains(email)){
+                String storedPassword = get(email);
+                String verify = passwordHash(password);
+                if(storedPassword.equals(verify)){
+                    return hash(email);
+                }
+                return -2;
             }
+            return -1;
 
-            return 0;
         }
 
         private boolean changePassword(String email, String oldPassword, String newPassword){
@@ -134,10 +136,10 @@ public class LoginSystem extends LoginSystemBase {
         public void resize(){
             maxSize *= 3;
             LinearProbingHashTable nt = new LinearProbingHashTable(maxSize);
-
+//add resize!!!
         }
 
-        /** Functiont to get hash code of a given key **/
+        /** Function to get hash code of a given key **/
         private int hash(String key)
         {
             int c = 31;
@@ -145,13 +147,13 @@ public class LoginSystem extends LoginSystemBase {
             for(int i = 0; i < key.length();i++){
                 char ch = key.charAt(i);
                 hashcode += (int) ch;
-                hashcode *= c;
+                if(i!= key.length()-1){
+                    hashcode *= c;
+                }
 
             }
 
             hashcode = Math.floorMod(hashcode,getMaxSize());
-                    //hashcode % getMaxSize();
-
             return hashcode;
         }
 
@@ -251,5 +253,32 @@ public class LoginSystem extends LoginSystemBase {
 
 
 
+        public static void main(String[] args) {
+            /*
+             * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             * REMOVE THE MAIN METHOD BEFORE SUBMITTING TO THE AUTOGRADER
+             * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             * The following main method is provided for simple debugging only
+             */
+            LoginSystem loginSystem = new LoginSystem();
+            System.out.println(loginSystem.hashCode("GQHTMP"));
+            System.out.println(loginSystem.hashCode("H2HTN1"));
+            assert loginSystem.hashCode("GQHTMP") == loginSystem.hashCode("H2HTN1");
+            assert loginSystem.size() == 101;
+            System.out.println(loginSystem.size());
+            assert loginSystem.checkPassword("a@b.c", "L6ZS9") == -1;
+            System.out.println(loginSystem.checkPassword("a@b.c", "L6ZS9"));
+            loginSystem.addUser("a@b.c", "L6ZS9");
 
+            assert loginSystem.checkPassword("a@b.c", "ZZZZZZ") == -2;
+            System.out.println(loginSystem.checkPassword("a@b.c", "ZZZZZZ"));
+
+            assert loginSystem.checkPassword("a@b.c", "L6ZS9") == 94;
+
+            System.out.println(loginSystem.checkPassword("a@b.c", "L6ZS9"));
+
+            loginSystem.removeUser("a@b.c", "L6ZS9");
+
+            assert loginSystem.checkPassword("a@b.c", "L6ZS9") == -1;
+        }
 }
